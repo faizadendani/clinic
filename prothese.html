@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Prothèses</title>
+   <style>
+    .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ddd;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #222;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 24px;
+    color:#007bff;
+}
+
+header button {
+    padding: 10px 20px;
+    background-color: #0056b3;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+header button:hover {
+    background-color: #0056b3;
+}
+
+.stats {
+    display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+}
+
+.stat-item {
+    background-color: #1e1e1e; /* Fond des cartes statistiques */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      width: 30%;
+}
+
+.stat-item h2 {
+    margin: 0;
+    font-size: 18px;
+}
+thead tr {
+      background-color: #14476B; /* Couleur du header de la table */
+      color: white;
+    }
+    thead th {
+      padding: 10px;
+      text-align: left;
+    }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+table th {
+    background-color: #333;
+}
+
+table td {
+    background-color: #555;
+}
+
+table td .btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+table td .edit {
+    background-color: #007bff;
+    color: white;
+}
+
+table td .delete {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+}
+
+.modal-content form label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.modal-content form input, .modal-content form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.modal-content form button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.red {
+    background-color: #e63946;
+    color: white;
+}
+
+.red:hover {
+    background-color: #c53030;
+}
+
+   </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Gestion des Prothèses</h1>
+            <button id="addButton">Ajouter+</button>
+        </header>
+        <div class="stats">
+            <div class="stat-item">
+                <h2>Total Prothèses</h2>
+                <p id="totalArticles">0</p>
+            </div>
+            <div class="stat-item">
+                <h2>Proches de Rupture</h2>
+                <p id="nearBreak">0</p>
+            </div>
+            <div class="stat-item">
+                <h2>Prothèses Expirées</h2>
+                <p id="expired">0</p>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Quantité</th>
+                    <th>Fournisseur</th>
+                    <th>Date de Péremption</th>
+                    <th>État</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="prosthesisTable">
+                 
+            </tbody>
+        </table>
+    </div>
+
+ 
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Ajouter une Prothèse</h2>
+            <form id="addForm">
+                <label for="name">Nom :</label>
+                <input type="text" id="name" required>
+                <label for="category">Catégorie :</label>
+                <input type="text" id="category" required>
+                <label for="quantity">Quantité :</label>
+                <input type="number" id="quantity" required>
+                <label for="supplier">Fournisseur :</label>
+                <input type="text" id="supplier" required>
+                <label for="expiryDate">Date de Péremption :</label>
+                <input type="date" id="expiryDate" required>
+                <button type="submit">Ajouter</button>
+                <button type="button" id="cancelButton">Annuler</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // Sélection des éléments du DOM
+const addButton = document.getElementById("addButton");
+const modal = document.getElementById("modal");
+const cancelButton = document.getElementById("cancelButton");
+const addForm = document.getElementById("addForm");
+const prosthesisTable = document.getElementById("prosthesisTable");
+const totalArticles = document.getElementById("totalArticles");
+const nearBreak = document.getElementById("nearBreak");
+const expired = document.getElementById("expired");
+
+// Variables de suivi
+let totalCount = 0;
+let nearBreakCount = 0;
+let expiredCount = 0;
+
+// Fonction pour afficher le modal
+addButton.addEventListener("click", () => {
+    modal.classList.remove("hidden");
+    addForm.dataset.editing = ""; // Réinitialise le mode édition
+});
+
+// Fonction pour cacher le modal
+cancelButton.addEventListener("click", () => {
+    modal.classList.add("hidden");
+});
+
+// Fonction pour ajouter ou modifier une prothèse
+addForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    // Récupération des valeurs du formulaire
+    const name = document.getElementById("name").value;
+    const category = document.getElementById("category").value;
+    const quantity = parseInt(document.getElementById("quantity").value);
+    const supplier = document.getElementById("supplier").value;
+    const expiryDate = new Date(document.getElementById("expiryDate").value);
+    const today = new Date();
+
+    // Détection de l'état de la prothèse
+    let state = "OK";
+    if (expiryDate < today) {
+        state = "Expirée";
+    } else if (quantity < 5) {
+        state = "Proche de rupture";
+    }
+
+    if (addForm.dataset.editing) {
+        // Mode édition : modifier la ligne existante
+        const row = document.querySelector(`tr[data-id="${addForm.dataset.editing}"]`);
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${category}</td>
+            <td>${quantity}</td>
+            <td>${supplier}</td>
+            <td>${expiryDate.toISOString().split("T")[0]}</td>
+            <td>${state}</td>
+            <td>
+                <button class="editButton">Modifier</button>
+                <button class="deleteButton red">Supprimer</button>
+            </td>
+        `;
+        addEventListenersToRow(row);
+    } else {
+        // Ajout d'une nouvelle ligne
+        const row = document.createElement("tr");
+        row.dataset.id = Date.now(); // Identifiant unique pour la ligne
+        row.innerHTML = `
+            <td>${name}</td>
+            <td>${category}</td>
+            <td>${quantity}</td>
+            <td>${supplier}</td>
+            <td>${expiryDate.toISOString().split("T")[0]}</td>
+            <td>${state}</td>
+            <td>
+                <button class="editButton">Modifier</button>
+                <button class="deleteButton red">Supprimer</button>
+            </td>
+        `;
+        prosthesisTable.appendChild(row);
+        addEventListenersToRow(row);
+
+        // Mise à jour des statistiques
+        totalCount++;
+        totalArticles.textContent = totalCount;
+        if (state === "Proche de rupture") nearBreakCount++;
+        if (state === "Expirée") expiredCount++;
+        nearBreak.textContent = nearBreakCount;
+        expired.textContent = expiredCount;
+    }
+
+    // Réinitialisation du formulaire et fermeture du modal
+    addForm.reset();
+    delete addForm.dataset.editing; // Supprime l'attribut "editing"
+    modal.classList.add("hidden");
+});
+
+// Fonction pour ajouter les événements aux boutons dans chaque ligne
+function addEventListenersToRow(row) {
+    const editButton = row.querySelector(".editButton");
+    const deleteButton = row.querySelector(".deleteButton");
+
+    // Gestion de la modification
+    editButton.addEventListener("click", () => {
+        modal.classList.remove("hidden");
+        addForm.dataset.editing = row.dataset.id; // Mode édition
+
+        // Pré-remplir le formulaire avec les valeurs existantes
+        const cells = row.children;
+        document.getElementById("name").value = cells[0].textContent;
+        document.getElementById("category").value = cells[1].textContent;
+        document.getElementById("quantity").value = cells[2].textContent;
+        document.getElementById("supplier").value = cells[3].textContent;
+        document.getElementById("expiryDate").value = cells[4].textContent;
+    });
+
+    // Gestion de la suppression
+    deleteButton.addEventListener("click", () => {
+        const state = row.children[5].textContent;
+        prosthesisTable.removeChild(row);
+
+        // Mise à jour des statistiques
+        totalCount--;
+        totalArticles.textContent = totalCount;
+        if (state === "Proche de rupture") nearBreakCount--;
+        if (state === "Expirée") expiredCount--;
+        nearBreak.textContent = nearBreakCount;
+        expired.textContent = expiredCount;
+    });
+}
+
+
+    </script>
+</body>
+</html>
